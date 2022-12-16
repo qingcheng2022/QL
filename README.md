@@ -29,10 +29,10 @@
 
 ### . 青龙面板
 - 拉取仓库
- ql repo https://github.com/WWJqingcheng/dx.git "" "backUp|tools|JS|logs|login"  "tools|JS|logs|login"
+ ql repo https://github.com/qingcheng2022/QL.git "" "backUp|tools|JS|logs|login" "tools|JS|logs|login"
  
  上面那个拉不到就用下面这个加速代理拉
-ql repo https://github.ruirui.fun/https://github.com/WWJqingcheng/dx.git "" "backUp|tools|JS|logs|login"  "tools|JS|logs|login"
+ql repo https://github.ruirui.fun/https://github.com/qingcheng2022/QL.git "" "backUp|tools|JS|logs|login"  "tools|JS|logs|login"
 
 
 
