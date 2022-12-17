@@ -16,7 +16,6 @@
 
 缺login就下载上面那个login文件夹同样放到这个目录下/root/ql/scripts/WWJqingcheng_dx
 
-缺失tool模块直接在python依赖里面安装tool
 
 缺失pycryptodome的！！！！！先在装liunx装build-base依赖再去python装pycryptodome
 
