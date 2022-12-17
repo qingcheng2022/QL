@@ -248,7 +248,7 @@ class China_Unicom:
             self.query_score()
         self.query_red()
 
-
+ 
 if __name__ == "__main__":
     """读取环境变量"""
     phone_num = get_environ("PHONE_NUM")
