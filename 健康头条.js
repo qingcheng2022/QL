@@ -1,5 +1,5 @@
 /*
-下载地址，微信打开;https://app-connect.jk-tt.com/v166/html/jkttInviteFriends.html?path=invite&inviteCode=ELB156408&sourceType=3
+下载地址，微信打开;https://app-connect.jk-tt.com/v166/html/jkttInviteFriends.html?path=invite&inviteCode=0ZK156435&sourceType=1
 登录后 点我的 账号安全 设置密码
 
 变量
