@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 # -- coding: utf-8 --
 # -------------------------------
@@ -34,7 +35,7 @@ from json import dumps
 from tools.encrypt_symmetric import Crypt
 from tools.send_msg import push
 from tools.tool import get_environ, random_sleep
-# random_sleep(0, 4)
+# random_sleep(0, 1600)
 
 
 """主类"""
@@ -263,14 +264,7 @@ class China_Unicom:
 if __name__ == "__main__":
     """读取环境变量"""
     phone_num = get_environ("PHONE_NUM")
-    phone_num = phone_num.split('&')
     unicom_lotter = get_environ("UNICOM_LOTTER", default=True)
-    if phone_num == "" or []:
+    if phone_num == "":
         exit(0)
-    num = 1
-    for i in phone_num:
-        print('________________________________________________________________________________________')
-        print('当前运行第【' + str(num) + '】个账号')
-        China_Unicom(i).main()
-        num = int(num)
-        num += 1
+    China_Unicom(phone_num).main()
