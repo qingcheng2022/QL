@@ -5,13 +5,13 @@
 # 觉得好用请点 *star*，作者仓库:https://github.com/rpgrpg/freenom-qinglong.git
 
 '''
-cron: 33 7 * * 2,5
+cron: 33 10 * * *
 new Env:('freenom多帐户续期');
 '''
 # 配置环境变量：export freenom_usr=""，多号用&分割，示例：123@qq.com&abc@163.com
 # 配置环境变量：export freenom_psd=""，账号对应密码同样用&分割，示例：miam1&mima2
 # 密码含&的，设置export change_split="",示例：export change_split=","代表用逗号分割
-# V20229
+# V20231a
 
 import requests
 import re,os,time,random
@@ -19,7 +19,7 @@ try:
     from notify import send
 except:
     print("upload notify failed")
-    exit(-1)
+
 
 # 没有设置环境变量可以在此处直接填写freenom用户名，多号用&分割，示例：'123@qq.com&abc@163.com'
 username = ''
@@ -68,7 +68,7 @@ def get_usr():
 # 获取密码
 def get_psd():
     if "freenom_psd" in os.environ:
-        if "change_spilt" in os.environ:
+        if "change_split" in os.environ:
             psd_list = os.environ["freenom_psd"].split(os.environ["change_split"])
             return psd_list
         else:
@@ -122,9 +122,9 @@ def main(usr,psd):
     renew_domains_failed = []
     # 域名续期
     for domain, days, renewal_id in domains:
-        days = int(days)
-        domains_list.append(f'域名:{domain}还有{days}天到期~')
-        if days < 14:
+        day_s = int(days)
+        domains_list.append(f'域名:{domain}还有{day_s}天到期~')
+        if day_s < 14:
             # 避免频繁操作
             time.sleep(6)
             sess.headers.update({
@@ -156,7 +156,7 @@ def main(usr,psd):
         send(f'注意！！！您有{len(renew_domains_failed)}个域名续期失败，请及时手动操作确认！', f'续期失败的域名：{renew_domains_failed}')
     else:
         if renew_domains_succeed:
-            send(f'账号{usr}共有{len(domains_list)}个域名:\n{domains_list}', f'域名: {renew_domains_succeed}全部续期成功！')
+            send(f'账号{usr}共有{len(domains_list)}个域名:\n{domains_list}', f'域名: {renew_domains_succeed}续期成功！')
         else:
             send('恭喜，两周内没有需要续期的域名', f'账号{usr}共有{len(domains_list)}个域名:\n{domains_list}')
     return
