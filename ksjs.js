@@ -11,7 +11,7 @@
 import os
 import time
 import requests
-
+const $ = new Env("快手极速版");
 # 获取环境变量 Ksjsb 里的内容 并检查 Ksjsb 变量是否存在
 variable = os.getenv('Ksjsb')
 if not variable:
