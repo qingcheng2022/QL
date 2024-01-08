@@ -8,12 +8,11 @@
 
 ### . 青龙面板
 - 拉取仓库
- ql repo https://github.com/qingcheng2022/QL.git "" "backUp|tools|JS|logs|login" "tools|JS|logs|login"
+ ql repo https://github.com/qingcheng2022/QL.git
 
  
  上面那个拉不到就用下面这个加速代理拉（推荐）
-ql repo http://tg.wwwwj.tk/https://github.com/qingcheng2022/QL.git "" "backUp|tools|JS|logs|login" "tools|JS|logs|login"
-
+ql repo http://tg.wwwwj.tk/https://github.com/qingcheng2022/QL.git
 
 ## 上车地址
 
