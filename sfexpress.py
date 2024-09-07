@@ -1,5 +1,5 @@
 
-# cron: 11 6,9,12,15,18 * * *
+# cron: 35 6,9,12,15,18 * * *
 # const $ = new Env("顺丰速运");
 import hashlib
 import json
