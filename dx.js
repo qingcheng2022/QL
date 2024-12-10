@@ -4,19 +4,17 @@
 7天,15天,28天连签抽奖, 宠物等级权益兑换
 
 自己设置电信的服务密码, 把 手机号#服务密码 填到变量里, 多账号换行或&或@隔开:
-export chinaTelecomAccount="13888888888#123456"
+export chinaTelecomAccount="138000000#111111"
 
-每天运行一两次
+每天运行多次
 
 
-cron: 59 59 9,11,12,16,17 * * *
-const $ = new Env("电信");
+cron: 5 0,6,12,20 * * *
+const $ = new Env("电信营业厅并发");
 */
 
-//Mon Jul 01 2024 07:58:51 GMT+0000 (Coordinated Universal Time)
-//Base:https://github.com/echo094/decode-js
-//Modify:https://github.com/smallfawn/decode_action
-const _0x49dfef = _0x5370a4("电信营业厅"),
+
+const _0x49dfef = _0x5370a4("电信营业厅并发"),
   _0x8e0885 = require("got"),
   _0x203c4a = require("path"),
   {
@@ -284,6 +282,19 @@ try {
   _0x280825 = _0x236d58;
 } catch {}
 let _0x3b1630 = new _0x280825(_0x49dfef);
+const { exec } = require('child_process');
+const fs = require('fs');
+function execAsync(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
+}
 class _0x3f433d extends _0x280825 {
   constructor(_0x5669ce) {
     super(_0x49dfef);
@@ -423,17 +434,49 @@ class _0x3f433d extends _0x280825 {
       return _0x252ee2;
     }
   }
+
+  async firstRequest() {
+    try {
+      
+      const { stdout, stderr } = await execAsync('python Ruishu.py');
+
+      if (stderr) {
+        console.error(`Error running Ruishu.py: ${stderr}`);
+        return null;
+      }
+
+    
+      const cookies = JSON.parse(stdout);
+
+      
+      const cookieString = Object.entries(cookies)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('; ');
+
+      return cookieString;
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+      return null;
+    }
+  }
+
+  
   async get_sign(_0x9b96be = {}) {
+    const cookies = await this.firstRequest();
     let _0x10c0cb = false;
     try {
       const _0x59fe75 = {
         ticket: this.ticket
       };
+
       const _0x139dfe = {
         fn: "login",
         method: "get",
         url: "https://wapside.189.cn:9001/jt-sign/ssoHomLogin",
-        searchParams: _0x59fe75
+        searchParams: _0x59fe75,
+        headers: {
+          Cookie: cookies,
+        }
       };
       let {
           result: _0x36bbb6,
@@ -456,6 +499,7 @@ class _0x3f433d extends _0x280825 {
     return _0x47bb4b.encrypt(_0x1c768f, "hex");
   }
   async userCoinInfo(_0x3a27b0 = false, _0x2a9f2e = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x314c14 = {
         phone: this.name
@@ -466,6 +510,9 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/api/home/userCoinInfo",
           json: {
             para: this.encrypt_para(_0x314c14)
+          },
+          headers: {
+            Cookie: cookies,
           }
         },
         {
@@ -496,59 +543,72 @@ class _0x3f433d extends _0x280825 {
       console.log(_0x4d1b75);
     }
   }
-  async userStatusInfo(_0x10c627 = {}) {
+    async userStatusInfo(_0x10c627 = {}) {
     try {
-      const _0x34621e = {
+        const _0x34621e = {
         phone: this.name
-      };
-      let _0x16b897 = {
+        };
+        let _0x16b897 = {
         fn: "userStatusInfo",
         method: "post",
         url: "https://wapside.189.cn:9001/jt-sign/api/home/userStatusInfo",
         json: {
-          para: this.encrypt_para(_0x34621e)
+            para: this.encrypt_para(_0x34621e)
         }
-      };
-      {
+        };
+
+        // 第一次请求
+        {
+        const cookies = await this.firstRequest();
+        _0x16b897.headers = {
+            Cookie: cookies,
+        };
         let {
             result: _0x39cfe5,
             statusCode: _0x5e556e
-          } = await this.request(_0x49dfef.copy(_0x16b897)),
-          _0x509ab0 = _0x49dfef.get(_0x39cfe5, "resoultCode", _0x5e556e);
+            } = await this.request(_0x49dfef.copy(_0x16b897)),
+            _0x509ab0 = _0x49dfef.get(_0x39cfe5, "resoultCode", _0x5e556e);
         if (_0x509ab0 == 0) {
-          let {
+            let {
             isSign: _0x1d403c
-          } = _0x39cfe5?.["data"];
-          _0x1d403c ? this.log("今天已签到") : await this.doSign();
+            } = _0x39cfe5?.["data"];
+            _0x1d403c ? this.log("今天已签到") : await this.doSign();
         } else {
-          let _0x11bda2 = _0x39cfe5?.["msg"] || _0x39cfe5?.["resoultMsg"] || _0x39cfe5?.["error"] || "";
-          this.log("查询账户签到状态错误[" + _0x509ab0 + "]: " + _0x11bda2);
+            let _0x11bda2 = _0x39cfe5?.["msg"] || _0x39cfe5?.["resoultMsg"] || _0x39cfe5?.["error"] || "";
+            this.log("查询账户签到状态错误[" + _0x509ab0 + "]: " + _0x11bda2);
         }
-      }
-      {
+        }
+
+        // 第二次请求
+        {
+        const cookies = await this.firstRequest();
+        _0x16b897.headers = {
+            Cookie: cookies,
+        };
         let {
             result: _0xf4c969,
             statusCode: _0x34b777
-          } = await this.request(_0x49dfef.copy(_0x16b897)),
-          _0x4d9c85 = _0x49dfef.get(_0xf4c969, "resoultCode", _0x34b777);
+            } = await this.request(_0x49dfef.copy(_0x16b897)),
+            _0x4d9c85 = _0x49dfef.get(_0xf4c969, "resoultCode", _0x34b777);
         if (_0x4d9c85 == 0) {
-          let {
+            let {
             continuousDay: _0x33365d,
             signDay: _0x128cf2,
             isSeven: _0x3fa455
-          } = _0xf4c969?.["data"];
-          this.log("已签到" + _0x128cf2 + "天, 连签" + _0x33365d + "天");
-          _0x3fa455 && (await this.exchangePrize());
+            } = _0xf4c969?.["data"];
+            this.log("已签到" + _0x128cf2 + "天, 连签" + _0x33365d + "天");
+            _0x3fa455 && (await this.exchangePrize());
         } else {
-          let _0xc36b81 = _0xf4c969?.["msg"] || _0xf4c969?.["resoultMsg"] || _0xf4c969?.["error"] || "";
-          this.log("查询账户签到状态错误[" + _0x4d9c85 + "]: " + _0xc36b81);
+            let _0xc36b81 = _0xf4c969?.["msg"] || _0xf4c969?.["resoultMsg"] || _0xf4c969?.["error"] || "";
+            this.log("查询账户签到状态错误[" + _0x4d9c85 + "]: " + _0xc36b81);
         }
-      }
+        }
     } catch (_0x103f04) {
-      console.log(_0x103f04);
+        console.log(_0x103f04);
     }
-  }
+    }
   async continueSignDays(_0x3e553e = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x6a3b38 = {
         phone: this.name
@@ -559,8 +619,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/webSign/continueSignDays",
           json: {
             para: this.encrypt_para(_0x6a3b38)
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0x6e6187,
           statusCode: _0x257d59
@@ -590,6 +653,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async continueSignRecords(_0x716c04 = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x47b502 = {
         phone: this.name
@@ -600,8 +664,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/webSign/continueSignRecords",
           json: {
             para: this.encrypt_para(_0x47b502)
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0xcdce9f,
           statusCode: _0x167568
@@ -629,6 +696,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async doSign(_0x3d1e97 = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x2c6ae2 = {
           phone: this.name,
@@ -641,8 +709,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/webSign/sign",
           json: {
             encode: this.encode_aes(JSON.stringify(_0x2c6ae2))
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0x4a380a,
           statusCode: _0x39f295
@@ -671,6 +742,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async exchangePrize(_0x503199 = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x15d8af = _0x49dfef.pop(_0x503199, "type", "7");
       const _0x247865 = {
@@ -683,8 +755,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/webSign/exchangePrize",
           json: {
             para: this.encrypt_para(_0x247865)
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0x122edb,
           statusCode: _0x7493f8
@@ -713,6 +788,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async homepage(_0x5a7e8f, _0x26d9a1 = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x1d3d49 = {
         phone: this.name,
@@ -725,8 +801,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/webSign/homepage",
           json: {
             para: this.encrypt_para(_0x1d3d49)
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0x3462ae,
           statusCode: _0x17c9d0
@@ -788,6 +867,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async receiveReward(_0x1f06a0, _0x27d046 = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x408e82 = _0x1f06a0?.["title"]?.["split"](" ")?.[0];
       const _0x1205c1 = {
@@ -800,8 +880,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/paradise/receiveReward",
           json: {
             para: this.encrypt_para(_0x1205c1)
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0x514940,
           statusCode: _0x5641f8
@@ -818,6 +901,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async openMsg(_0x51c539, _0x46c92d = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x4b897b = _0x51c539?.["title"]?.["split"](" ")?.[0];
       const _0x2aab67 = {
@@ -829,8 +913,11 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/paradise/openMsg",
           json: {
             para: this.encrypt_para(_0x2aab67)
-          }
-        },
+          },
+          headers: {
+            Cookie: cookies,
+          }
+        },
         {
           result: _0xb6f7bf,
           statusCode: _0x41e108
@@ -846,127 +933,172 @@ class _0x3f433d extends _0x280825 {
       console.log(_0x574cb0);
     }
   }
-  async polymerize(_0x2beade, _0x3610fd = {}) {
-    try {
-      let _0x27bccc = _0x2beade?.["title"]?.["split"](" ")?.[0];
-      const _0x128b55 = {
-        phone: this.name,
-        jobId: _0x2beade.taskId
-      };
-      let _0x493039 = {
-          fn: "polymerize",
-          method: "post",
-          url: "https://wapside.189.cn:9001/jt-sign/webSign/polymerize",
-          json: {
-            para: this.encrypt_para(_0x128b55)
-          }
-        },
-        {
-          result: _0x2c3e91,
-          statusCode: _0x3c5244
-        } = await this.request(_0x493039),
-        _0x43d9c9 = _0x49dfef.get(_0x2c3e91, "resoultCode", _0x3c5244);
-      if (_0x43d9c9 == 0) {
-        this.log("完成任务[" + _0x27bccc + "]成功: " + _0x2c3e91?.["resoultMsg"]);
-      } else {
-        let _0x402f9a = _0x2c3e91?.["msg"] || _0x2c3e91?.["resoultMsg"] || _0x2c3e91?.["error"] || "";
-        this.log("完成任务[" + _0x27bccc + "]错误[" + _0x43d9c9 + "]: " + _0x402f9a);
-      }
-    } catch (_0xc860ab) {
-      console.log(_0xc860ab);
-    }
-  }
-  async food(_0x7cbaa1, _0x4b0ab1 = {}) {
-    try {
-      const _0x564080 = {
-        phone: this.name
-      };
-      let _0x587fa4 = {
-          fn: "food",
-          method: "post",
-          url: "https://wapside.189.cn:9001/jt-sign/paradise/food",
-          json: {
-            para: this.encrypt_para(_0x564080)
-          }
-        },
-        {
-          result: _0x156b8d,
-          statusCode: _0x191b9d
-        } = await this.request(_0x587fa4),
-        _0x117b58 = _0x49dfef.get(_0x156b8d, "resoultCode", _0x191b9d);
-      if (_0x117b58 == 0) {
-        this.log("第" + _0x7cbaa1 + "次喂食: " + (_0x156b8d?.["resoultMsg"] || "成功"));
-        if (_0x156b8d?.["levelUp"]) {
-          let _0x265b8d = _0x156b8d?.["currLevelRightList"][0]?.["level"];
-          const _0x2eec5b = {
-            notify: true
-          };
-          this.log("宠物已升级到[LV." + _0x265b8d + "], 获得: " + _0x156b8d?.["currLevelRightList"][0]?.["righstName"], _0x2eec5b);
+    async polymerize(_0x2beade, _0x3610fd = {}) {
+        const cookies = await this.firstRequest();
+        try {
+            let _0x27bccc = _0x2beade?.["title"]?.["split"](" ")?.[0];
+            const _0x128b55 = {
+                phone: this.name,
+                jobId: _0x2beade.taskId
+            };
+            let _0x493039 = {
+                fn: "polymerize",
+                method: "post",
+                url: "https://wapside.189.cn:9001/jt-sign/webSign/polymerize",
+                json: {
+                    para: this.encrypt_para(_0x128b55)
+              },
+              headers: {
+                Cookie: cookies,
+              }
+            },
+            {
+                result: _0x2c3e91,
+                statusCode: _0x3c5244
+            } = await this.request(_0x493039),
+            _0x43d9c9 = _0x49dfef.get(_0x2c3e91, "resoultCode", _0x3c5244);
+
+            if (_0x43d9c9 == 0) {
+                this.log("完成任务[" + _0x27bccc + "]成功: " + _0x2c3e91?.["resoultMsg"]);
+            } else {
+                let _0x402f9a = _0x2c3e91?.["msg"] || _0x2c3e91?.["resoultMsg"] || _0x2c3e91?.["error"] || "";
+
+                // 检查是否是无权限错误
+                if (_0x402f9a.includes("您无此权限")) {
+                    this.log("检测到无权限错误，重新获取sign...");
+                    await this.get_sign(); // 重新获取sign
+                    this.log("重新获取sign成功，继续完成任务...");
+                    return this.polymerize(_0x2beade, _0x3610fd); // 重新调用polymerize方法
+                }
+
+                this.log("完成任务[" + _0x27bccc + "]错误[" + _0x43d9c9 + "]: " + _0x402f9a);
+            }
+        } catch (_0xc860ab) {
+            console.log(_0xc860ab);
         }
-      } else {
-        let _0x14117b = _0x156b8d?.["msg"] || _0x156b8d?.["resoultMsg"] || _0x156b8d?.["error"] || "";
-        this.log("第" + _0x7cbaa1 + "次喂食失败[" + _0x117b58 + "]: " + _0x14117b);
-        _0x14117b?.["includes"]("最大喂食次数") && (this.can_feed = false);
-      }
-    } catch (_0x523284) {
-      console.log(_0x523284);
     }
-  }
-  async getParadiseInfo(_0x4c16d3 = {}) {
+    async food(_0x7cbaa1, _0x4b0ab1 = {}) {
+        const cookies = await this.firstRequest();
+        try {
+            const _0x564080 = {
+                phone: this.name
+            };
+            let _0x587fa4 = {
+                fn: "food",
+                method: "post",
+                url: "https://wapside.189.cn:9001/jt-sign/paradise/food",
+                json: {
+                    para: this.encrypt_para(_0x564080)
+              },
+              headers: {
+                Cookie: cookies,
+              }
+            },
+            {
+                result: _0x156b8d,
+                statusCode: _0x191b9d
+            } = await this.request(_0x587fa4),
+            _0x117b58 = _0x49dfef.get(_0x156b8d, "resoultCode", _0x191b9d);
+
+            if (_0x117b58 == 0) {
+                this.log("第" + _0x7cbaa1 + "次喂食: " + (_0x156b8d?.["resoultMsg"] || "成功"));
+                if (_0x156b8d?.["levelUp"]) {
+                    let _0x265b8d = _0x156b8d?.["currLevelRightList"][0]?.["level"];
+                    const _0x2eec5b = {
+                        notify: true
+                    };
+                    this.log("宠物已升级到[LV." + _0x265b8d + "], 获得: " + _0x156b8d?.["currLevelRightList"][0]?.["righstName"], _0x2eec5b);
+                }
+            } else {
+                let _0x14117b = _0x156b8d?.["msg"] || _0x156b8d?.["resoultMsg"] || _0x156b8d?.["error"] || "";
+
+                // 检查是否是无权限错误
+                if (_0x14117b.includes("您无此权限")) {
+                    this.log("检测到无权限错误，重新获取sign...");
+                    await this.get_sign(); // 重新获取sign
+                    this.log("重新获取sign成功，继续完成任务...");
+                    return this.food(_0x7cbaa1, _0x4b0ab1); // 重新调用food方法
+                }
+
+                this.log("第" + _0x7cbaa1 + "次喂食失败[" + _0x117b58 + "]: " + _0x14117b);
+                _0x14117b?.["includes"]("最大喂食次数") && (this.can_feed = false);
+            }
+        } catch (_0x523284) {
+            console.log(_0x523284);
+        }
+    }
+    async getParadiseInfo(_0x4c16d3 = {}) {
+    const cookies = await this.firstRequest();
     try {
-      const _0x1138c3 = {
+        const _0x1138c3 = {
         phone: this.name
-      };
-      let _0x2d8a6c = {
+        };
+        let _0x2d8a6c = {
         fn: "getParadiseInfo",
         method: "post",
         url: "https://wapside.189.cn:9001/jt-sign/paradise/getParadiseInfo",
         json: {
-          para: this.encrypt_para(_0x1138c3)
-        }
-      };
-      {
+            para: this.encrypt_para(_0x1138c3)
+              },
+              headers: {
+                Cookie: cookies,
+              }
+            };
+
+        // 第一次请求
+        {
+        const cookies = await this.firstRequest();
+        _0x2d8a6c.headers = {
+            Cookie: cookies,
+        };
         let {
             result: _0x13b7df,
             statusCode: _0x1e6dfd
-          } = await this.request(_0x2d8a6c),
-          _0x54514a = _0x49dfef.get(_0x13b7df, "resoultCode", _0x1e6dfd);
+            } = await this.request(_0x2d8a6c),
+            _0x54514a = _0x49dfef.get(_0x13b7df, "resoultCode", _0x1e6dfd);
         if (_0x54514a == 0) {
-          let _0xdb66c = _0x13b7df?.["userInfo"]?.["levelInfoMap"];
-          this.level = _0xdb66c?.["level"];
-          for (let _0x33d3a3 = 1; _0x33d3a3 <= 10 && this.can_feed; _0x33d3a3++) {
+            let _0xdb66c = _0x13b7df?.["userInfo"]?.["levelInfoMap"];
+            this.level = _0xdb66c?.["level"];
+            for (let _0x33d3a3 = 1; _0x33d3a3 <= 10 && this.can_feed; _0x33d3a3++) {
             await this.food(_0x33d3a3);
-          }
+            }
         } else {
-          let _0x4e4dd5 = _0x13b7df?.["msg"] || _0x13b7df?.["resoultMsg"] || _0x13b7df?.["error"] || "";
-          this.log("查询宠物等级失败[" + _0x54514a + "]: " + _0x4e4dd5);
-          return;
+            let _0x4e4dd5 = _0x13b7df?.["msg"] || _0x13b7df?.["resoultMsg"] || _0x13b7df?.["error"] || "";
+            this.log("查询宠物等级失败[" + _0x54514a + "]: " + _0x4e4dd5);
+            return;
         }
-      }
-      {
+        }
+
+        // 第二次请求
+        {
+        const cookies = await this.firstRequest();
+        _0x2d8a6c.headers = {
+            Cookie: cookies,
+        };
         let {
             result: _0x1334dd,
             statusCode: _0x363378
-          } = await this.request(_0x2d8a6c),
-          _0xf71230 = _0x49dfef.get(_0x1334dd, "resoultCode", _0x363378);
+            } = await this.request(_0x2d8a6c),
+            _0xf71230 = _0x49dfef.get(_0x1334dd, "resoultCode", _0x363378);
         if (_0xf71230 == 0) {
-          let _0x41df23 = _0x1334dd?.["userInfo"]?.["levelInfoMap"];
-          this.level = _0x41df23?.["level"];
-          const _0x268241 = {
+            let _0x41df23 = _0x1334dd?.["userInfo"]?.["levelInfoMap"];
+            this.level = _0x41df23?.["level"];
+            const _0x268241 = {
             notify: true
-          };
-          this.log("宠物等级[Lv." + _0x41df23?.["level"] + "], 升级进度: " + _0x41df23?.["growthValue"] + "/" + _0x41df23?.["fullGrowthCoinValue"], _0x268241);
+            };
+            this.log("宠物等级[Lv." + _0x41df23?.["level"] + "], 升级进度: " + _0x41df23?.["growthValue"] + "/" + _0x41df23?.["fullGrowthCoinValue"], _0x268241);
         } else {
-          let _0x1036a5 = _0x1334dd?.["msg"] || _0x1334dd?.["resoultMsg"] || _0x1334dd?.["error"] || "";
-          this.log("查询宠物等级失败[" + _0xf71230 + "]: " + _0x1036a5);
-          return;
+            let _0x1036a5 = _0x1334dd?.["msg"] || _0x1334dd?.["resoultMsg"] || _0x1334dd?.["error"] || "";
+            this.log("查询宠物等级失败[" + _0xf71230 + "]: " + _0x1036a5);
+            return;
         }
-      }
+        }
     } catch (_0x94c5b4) {
-      console.log(_0x94c5b4);
+        console.log(_0x94c5b4);
     }
-  }
+    }
   async getLevelRightsList(_0x3ea0a7 = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x166dba = {
         phone: this.name
@@ -977,7 +1109,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/paradise/getLevelRightsList",
           json: {
             para: this.encrypt_para(_0x166dba)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x4cf13d,
@@ -1003,6 +1138,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async getConversionRights(_0xca19ef, _0x28066a, _0x21f772 = {}) {
+    const cookies = await this.firstRequest();
     let _0x21db60 = false;
     try {
       let _0x5d6f72 = _0xca19ef?.["righstName"] || "";
@@ -1017,7 +1153,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/paradise/getConversionRights",
           json: {
             para: this.encrypt_para(_0x714d7a)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x409ea1,
@@ -1043,6 +1182,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async conversionRights(_0x1258fb, _0x5ee37a = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x285002 = _0x1258fb?.["righstName"] || "";
       const _0x3ba559 = {
@@ -1055,7 +1195,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/paradise/conversionRights",
           json: {
             para: this.encrypt_para(_0x3ba559)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x24b720,
@@ -1281,6 +1424,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_preCost(_0x3e12ef = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x54e4a2 = {
           fn: "month_jml_preCost",
@@ -1289,7 +1433,10 @@ class _0x3f433d extends _0x280825 {
           json: {
             phone: this.encode_aes(this.name),
             activityCode: "shortMesssge"
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x19ae9b,
@@ -1312,6 +1459,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_userCost(_0x5b6d73, _0x434031 = {}) {
+    const cookies = await this.firstRequest();
     try {
       let _0x223f5d = {
           fn: "month_jml_userCost",
@@ -1321,7 +1469,10 @@ class _0x3f433d extends _0x280825 {
             phone: this.encode_aes(this.name),
             activityCode: "shortMesssge",
             flag: this.jml_tokenFlag
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x2add96,
@@ -1340,6 +1491,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_receive(_0x5aaffc = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x1a3146 = {
         phone: this.name,
@@ -1351,7 +1503,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/lottery/receive",
           json: {
             para: this.encrypt_para(_0x1a3146)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x16a4a1,
@@ -1369,6 +1524,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_getCount(_0x1eebce = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x3d70a3 = {
         phone: this.name,
@@ -1380,7 +1536,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/lottery/getCount",
           json: {
             para: this.encrypt_para(_0x3d70a3)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0xf1b29a,
@@ -1408,6 +1567,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_addVideoCount(_0x10070c, _0x588069 = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x723a = {
         phone: this.name,
@@ -1420,7 +1580,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/lottery/addVideoCount",
           json: {
             para: this.encrypt_para(_0x723a)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x8dff4,
@@ -1438,6 +1601,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_refresh(_0xcca85f = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x551b86 = {
         phone: this.name,
@@ -1449,7 +1613,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/lottery/refresh",
           json: {
             para: this.encrypt_para(_0x551b86)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x764f77,
@@ -1477,6 +1644,7 @@ class _0x3f433d extends _0x280825 {
     }
   }
   async month_jml_lotteryRevice(_0x5bf2d6 = {}) {
+    const cookies = await this.firstRequest();
     try {
       const _0x786d14 = {
         phone: this.name,
@@ -1488,7 +1656,10 @@ class _0x3f433d extends _0x280825 {
           url: "https://wapside.189.cn:9001/jt-sign/lottery/lotteryRevice",
           json: {
             para: this.encrypt_para(_0x786d14)
-          }
+          },
+          headers: {
+            Cookie: cookies,
+          }
         },
         {
           result: _0x361574,
