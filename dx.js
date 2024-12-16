@@ -8,6 +8,7 @@
 
 let ruishuApi = 'http://192.168.1.5:1257'
 
+const $ = new Env("电信营业厅");
 const _0x49dfef = _0x5370a4("电信营业厅");
 const _0x8e0885 = require("got");
 const _0x203c4a = require("path");
