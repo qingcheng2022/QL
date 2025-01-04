@@ -1,5 +1,6 @@
 #多号换行，变量名：sfsyUrl
 # const $ = new Env('顺丰速运')
+# cron: 31 6,9,12,15,18 * * *
 import hashlib
 import json
 import os
