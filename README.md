@@ -1,7 +1,6 @@
 
 ## 
 
--有问题qq群：665235222  或者点击进群  https://qm.qq.com/cgi-bin/qm/qr?k=Ec4jCxRERNQbhbZp-V6VCcFmyg7swRnE&authKey=zmMD0x2Ag6uzRdy8Fsx7oqFAg9bpDp4KCEU7fRfbjvv3FZi7nXvPmZVaCCKvFncJ&noverify=0&group_code=665235222
 - 随缘上传。
 
 
@@ -39,5 +38,5 @@ ql repo http://tg.wwwwj.tk/https://github.com/qingcheng2022/QL.git
 
 - 请勿将本仓库的任何内容用于商业或非法目的，否则后果自负。
 
-- 如果任何单位或个人认为该项目的脚本可能涉嫌侵犯其权利，则应及时通知并提供身份证明，所有权证明，我们将在收到认证文件后删除相关脚本。
+- 如果任何单位或个人认为该项目的脚本可能涉嫌侵犯其权利，则应及时通知并提供身份证明，所有权证明，将在收到认证文件后删除相关脚本。
 
