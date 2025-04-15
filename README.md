@@ -11,7 +11,7 @@
 
  
  上面那个拉不到就用下面这个加速代理拉（推荐）
-ql repo http://tg.wwwwj.tk/https://github.com/qingcheng2022/QL.git
+ql repo https://github.wwwj.cf//https://github.com/qingcheng2022/QL.git
 
 ## 上车地址
 
