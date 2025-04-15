@@ -1,8 +1,11 @@
-
+# chinaTelecomAccount = `
+# 13454545457#123456
+# 13454545457#456789
+# `.trim();
 '''
-变量：chinaTelecomAccount
+变量：jdhf
 变量格式: 手机号#服务密码
-多号创建多个变量&隔开
+多号创建多个变量或者换行、&隔开
 '''
 import requests
 import re
@@ -16,6 +19,7 @@ import ssl
 import execjs
 import os
 import sys
+import urllib3
 
 from bs4 import BeautifulSoup
 
@@ -53,23 +57,27 @@ class DESAdapter(HTTPAdapter):
 
     def init_poolmanager(self, *args, **kwargs):
         context = create_urllib3_context(ciphers=self.CIPHERS)
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
         kwargs['ssl_context'] = context
         return super(DESAdapter, self).init_poolmanager(*args, **kwargs)
 
     def proxy_manager_for(self, *args, **kwargs):
         context = create_urllib3_context(ciphers=self.CIPHERS)
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
         kwargs['ssl_context'] = context
         return super(DESAdapter, self).proxy_manager_for(*args, **kwargs)
 
 
-requests.packages.urllib3.disable_warnings()
+requests.packages.urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ssl_context = ssl.create_default_context()
 ssl_context.check_hostname = False
 ssl_context.verify_mode = ssl.CERT_NONE
 ssl_context.set_ciphers('DEFAULT@SECLEVEL=0')
 ss = requests.session()
-ss.ssl=ssl_context
-ss.headers={"User-Agent":"Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.97 Mobile Safari/537.36","Referer":"https://wapact.189.cn:9001/JinDouMall/JinDouMall_independentDetails.html"}
+ss.verify = False
+ss.headers={"User-Agent":"Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.97 Mobile Safari/537.36","Referer":"https://wapact.189.cn:9001/JinDouMall/JinDouMall_independentDetails.html"}    
 ss.mount('https://', DESAdapter())
 yc = 0.1
 wt = 0
@@ -339,6 +347,7 @@ def ks(phone, ticket, uid):
 
     wxp[phone] = uid
     s = requests.session()
+    s.verify = False
     s.headers={"User-Agent":"Mozilla/5.0 (Linux; Android 13; 22081212C Build/TKQ1.220829.002) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.97 Mobile Safari/537.36","Referer":"https://wapact.189.cn:9001/JinDouMall/JinDouMall_independentDetails.html"}
     s.cookies.set_policy(BlockAll())
     s.mount('https://', DESAdapter())
@@ -362,7 +371,7 @@ def ks(phone, ticket, uid):
             bd = js.call('main').split('=')
             ck [bd[0]] = bd[1]
 
-        queryBigDataAppGetOrInfo = s.get('https://waphub.189.cn/gateway/golden/goldGoods/getGoodsList??floorType=0&userType=1&page&1&order=2&tabOrder=',cookies=ck).json()
+        queryBigDataAppGetOrInfo = s.get('https://waphub.189.cn/gateway/golden/goldGoods/getGoodsList??floorType=0&userType=1&page=2&order=2&tabOrder=',cookies=ck).json()
         # printn(queryBigDataAppGetOrInfo)
         for i in queryBigDataAppGetOrInfo["biz"]["ExchangeGoodslist"]:
             if '话费' not in i["title"]:continue
@@ -442,7 +451,7 @@ def first_request(res=''):
     #print(rsurl)
     ts_code += ss.get(rsurl).text
     content_code = soup.find_all('meta')[1].get('content')
-    with open("瑞数通杀.js") as f:
+    with open("rs.js") as f:
         js_code_ym = f.read()
     js_code = js_code_ym.replace('content_code', content_code).replace("'ts_code'", ts_code)
     js = execjs.compile(js_code)
@@ -454,7 +463,6 @@ def first_request(res=''):
 
 
 def main():
-    print()
     global wt,rs
     r = ss.get('https://wapact.189.cn:9001/gateway/stand/detailNew/exchange')
     if '$_ts=window' in r.text:
