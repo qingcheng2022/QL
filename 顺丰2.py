@@ -1,15 +1,11 @@
 #2025/1/6 遍历生活特权所有分组的券进行领券，券没啥用但完成可领取30点丰蜜目前一天拉满155点
 #变量名：sfsyUrl
 #格式：多账号用&分割或创建多个变量sfsyUrl
-#关于参数获取如下两种方式：
-#❶顺丰APP绑定微信后，添加机器人发送：顺丰
-#或者
-#❷打开小程序或APP-我的-积分, 手动抓包以下几种URL之一
+#关于参数获取：
+#打开小程序或APP-我的-积分, 手动抓包以下几种URL之一
 #https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect
 #https://mcs-mimp-web.sf-express.com/mcs-mimp/share/app/shareRedirect
-
-# const $ = new Env('顺丰速运')
-# cron: 31 6,9,12,15,18 * * *
+#抓好URL后访问https://www.toolhelper.cn/EncodeDecode/Url进行编码，请务必按提示操作
 import hashlib
 import json
 import os
@@ -24,10 +20,37 @@ from urllib.parse import unquote
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+# 代理相关配置
+PROXY_API_URL = os.getenv('SF_PROXY_API_URL', '')  # 从环境变量获取代理API地址
+
+def get_proxy():
+    """
+    从代理API获取代理
+    返回格式：{'http': 'http://ip:port', 'https': 'http://ip:port'}
+    """
+    try:
+        if not PROXY_API_URL:
+            print('⚠️ 未配置代理API地址，将不使用代理')
+            return None
+            
+        response = requests.get(PROXY_API_URL, timeout=10)
+        if response.status_code == 200:
+            proxy_text = response.text.strip()
+            if ':' in proxy_text:
+                proxy = f'http://{proxy_text}'
+                return {
+                    'http': proxy,
+                    'https': proxy
+                }
+        print(f'❌ 获取代理失败: {response.text}')
+        return None
+    except Exception as e:
+        print(f'❌ 获取代理异常: {str(e)}')
+        return None
+
 IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
-
     IS_DEV = True
 
 
@@ -60,9 +83,18 @@ class RUN:
         if len_split_info > 0 and "UID_" in last_info:
             self.send_UID = last_info
         self.index = index + 1
-        print(f"\n{'='*20} 🔄 开始执行第{self.index}个账号 🔄 {'='*20}")
+        print(f"{'='*5} 🔄 开始执行第{self.index}个账号 🔄 {'='*5}")
+        
+        # 获取代理
+        self.proxy = get_proxy()
+        if self.proxy:
+            print(f"✅ 成功获取代理: {self.proxy['http']}")
+        
         self.s = requests.session()
         self.s.verify = False
+        if self.proxy:
+            self.s.proxies = self.proxy
+            
         self.headers = {
             'Host': 'mcs-mimp-web.sf-express.com',
             'upgrade-insecure-requests': '1',
@@ -130,23 +162,49 @@ class RUN:
         self.headers.update(data)
         return data
 
-    def do_request(self, url, data={}, req_type='post'):
+    def do_request(self, url, data={}, req_type='post', max_retries=3):
         self.getSign()
-        try:
-            if req_type.lower() == 'get':
-                response = self.s.get(url, headers=self.headers)
-            elif req_type.lower() == 'post':
-                response = self.s.post(url, headers=self.headers, json=data)
-            else:
-                raise ValueError('Invalid req_type: %s' % req_type)
-            res = response.json()
-            return res
-        except requests.exceptions.RequestException as e:
-            print('Request failed:', e)
-            return None
-        except json.JSONDecodeError as e:
-            print('JSON decoding failed:', e)
-            return None
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                if req_type.lower() == 'get':
+                    response = self.s.get(url, headers=self.headers, timeout=30)  # 添加超时
+                elif req_type.lower() == 'post':
+                    response = self.s.post(url, headers=self.headers, json=data, timeout=30)  # 添加超时
+                else:
+                    raise ValueError('Invalid req_type: %s' % req_type)
+                    
+                # 检查响应状态码
+                response.raise_for_status()
+                
+                try:
+                    res = response.json()
+                    return res
+                except json.JSONDecodeError as e:
+                    print(f'JSON解析失败: {str(e)}, 响应内容: {response.text[:200]}')  # 只打印前200个字符
+                    retry_count += 1
+                    if retry_count < max_retries:
+                        print(f'正在进行第{retry_count + 1}次重试...')
+                        time.sleep(2)  # 添加延迟
+                        continue
+                    return None
+                    
+            except requests.exceptions.RequestException as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(f'请求失败，正在切换代理重试 ({retry_count}/{max_retries}): {str(e)}')
+                    # 重新获取代理
+                    self.proxy = get_proxy()
+                    if self.proxy:
+                        print(f"✅ 成功获取新代理: {self.proxy['http']}")
+                        self.s.proxies = self.proxy
+                    time.sleep(2)  # 等待2秒后重试
+                else:
+                    print('请求最终失败:', e)
+                    return None
+                
+        return None  # 所有重试都失败后返回None
 
     def sign(self):
         print(f'🎯 开始执行签到')
@@ -1925,11 +1983,6 @@ class RUN:
         self.honey_indexData()
         self.honey_indexData(True)
 
-        # 执行32周年庆任务
-        self.znq2025()
-        time.sleep(5)
-        self.cxcs()
-        self.index2025()
         activity_end_date = get_quarter_end_date()
         days_left = (activity_end_date - datetime.now()).days
         if days_left == 0:
@@ -1991,7 +2044,7 @@ if __name__ == '__main__':
     tokens = token.split('&')
     # print(tokens)
     if len(tokens) > 0:
-        print(f"\n{'='*30} 🚚 共获取到{len(tokens)}个账号 🚚 {'='*30}\n")
+        print(f" =====🚚 共获取到{len(tokens)}个账号 🚚=====")
         for index, infos in enumerate(tokens):
             run_result = RUN(infos, index).main()
             if not run_result: continue
