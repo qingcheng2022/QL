@@ -6,7 +6,7 @@
 #https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect
 #https://mcs-mimp-web.sf-express.com/mcs-mimp/share/app/shareRedirect
 #抓好URL后访问https://www.toolhelper.cn/EncodeDecode/Url进行编码，请务必按提示操作
-cron: 12 1,14,20,23 * * *
+
 import hashlib
 import json
 import os
