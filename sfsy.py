@@ -1,13 +1,7 @@
 #2025/1/6 遍历生活特权所有分组的券进行领券，券没啥用但完成可领取30点丰蜜目前一天拉满155点
 #变量名：sfsyUrl
 #格式：多账号用&分割或创建多个变量sfsyUrl
-#关于参数获取如下两种方式：
-#❶顺丰APP绑定微信后，前往该站点sm.linzixuan.work用微信扫码登录后，选择复制编码Token，不要复制错
-#或者
-#❷打开小程序或APP-我的-积分, 手动抓包以下几种URL之一
-#https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect
-#https://mcs-mimp-web.sf-express.com/mcs-mimp/share/app/shareRedirect
-#抓好URL后访问https://www.toolhelper.cn/EncodeDecode/Url进行编码，请务必按提示操作
+# cron: 11 1,5,22,15 * * *
 import hashlib
 import json
 import os
